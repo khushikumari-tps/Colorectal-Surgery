@@ -469,25 +469,70 @@
     tlSync();
   }
 
-  /* ---------- quick-start modal ---------- */
+  /* ---------- appointment modal ----------
+     Same form and lead route as the Advitya landing pages: the request is
+     posted to the CRM through js/crm-lead.js (keyed in js/crm-config.js).
+     If the CRM is switched off or unreachable, the visitor is offered
+     WhatsApp with the request filled in, so no enquiry is lost. */
+  var SERVICE = 'Colorectal Surgery';
+  var SLUG = 'colorectal-surgery';
+
   var modal = $('#quick-modal');
-  var quickForm = $('#quick-form');
-  var quickPhone = $('#quick-phone');
-  var quickError = $('#quick-error');
+  var apptPanel = $('#appt-panel');
+  var apptDone = $('#appt-done');
+  var apptForm = $('#appt-form');
+  var apptError = $('#appt-error');
   var lastFocus = null;
 
   function normalisePhone(value) {
     return String(value || '').replace(/[^0-9]/g, '').replace(/^(91|0)(?=\d{10}$)/, '');
   }
 
+  if (apptForm) {
+    var timeSelect = apptForm.elements.time;
+    TIMES.forEach(function (t) {
+      var o = document.createElement('option');
+      o.value = t;
+      o.textContent = label12(t);
+      timeSelect.appendChild(o);
+    });
+    apptForm.elements.date.min = isoOf(new Date());
+  }
+
+  /* carry the widget's location, date and time into the form */
+  function prefill() {
+    if (!apptForm) return;
+    var f = apptForm.elements;
+    f.location.value = picked.location || 'Kolkata';
+    if (picked.date) f.date.value = picked.date;
+    if (picked.time) f.time.value = picked.time;
+  }
+
+  function showPanel(done) {
+    if (apptPanel) apptPanel.hidden = !!done;
+    if (apptDone) apptDone.hidden = !done;
+  }
+
+  function setStatus(text, ok) {
+    if (!apptError) return;
+    apptError.textContent = text || '';
+    apptError.classList.toggle('is-visible', !!text);
+    apptError.classList.toggle('is-ok', !!ok);
+  }
+
   function openModal(trigger) {
     if (!modal) return;
     lastFocus = trigger || document.activeElement;
+    showPanel(false);
+    setStatus('');
+    prefill();
     modal.hidden = false;
     modal.classList.add('is-open');
     document.body.classList.add('modal-open');
-    if (quickError) { quickError.textContent = ''; quickError.classList.remove('is-visible'); }
-    setTimeout(function () { if (quickPhone) quickPhone.focus(); }, 60);
+    setTimeout(function () {
+      var first = apptForm && apptForm.elements.name;
+      if (first) first.focus();
+    }, 60);
   }
 
   function closeModal() {
@@ -498,16 +543,120 @@
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
 
-  function sendRequest(phone) {
+  /* ----- validation: our own messages, shown under each field ----- */
+  function clearError(field) {
+    field.removeAttribute('aria-invalid');
+    var holder = field.closest('.bkf__field') || field.closest('.bkf__consent');
+    var msg = holder && holder.querySelector('.bkf__err');
+    if (msg) msg.remove();
+  }
+
+  function showError(field, text) {
+    field.setAttribute('aria-invalid', 'true');
+    var holder = field.closest('.bkf__field') || field.closest('.bkf__consent');
+    if (!holder) return;
+    var msg = holder.querySelector('.bkf__err');
+    if (!msg) {
+      msg = document.createElement('p');
+      msg.className = 'bkf__err';
+      msg.id = 'err-' + field.name;
+      holder.appendChild(msg);
+    }
+    msg.textContent = text;
+    field.setAttribute('aria-describedby', msg.id);
+  }
+
+  function validate() {
+    var f = apptForm.elements;
+    var first = null;
+    [f.name, f.phone, f.consent].forEach(clearError);
+
+    if (!f.name.value.trim()) {
+      showError(f.name, 'Please enter your name.');
+      first = first || f.name;
+    }
+    if (!/^[6-9][0-9]{9}$/.test(normalisePhone(f.phone.value))) {
+      showError(f.phone, 'Please enter a valid 10-digit Indian mobile number.');
+      first = first || f.phone;
+    }
+    if (!f.consent.checked) {
+      showError(f.consent, 'Please confirm we may contact you about this enquiry.');
+      first = first || f.consent;
+    }
+    if (first) first.focus();
+    return !first;
+  }
+
+  function readForm() {
+    var f = apptForm.elements;
+    return {
+      name: f.name.value.trim(),
+      phone: normalisePhone(f.phone.value),
+      location: f.location.value,
+      date: f.date.value,
+      time: f.time.value ? label12(f.time.value) : '',
+      condition: f.condition.value.trim(),
+      message: f.message.value.trim(),
+      consent: f.consent.checked
+    };
+  }
+
+  function sendToCRM(p) {
+    if (!window.AdvCRM || !window.AdvCRM.enabled()) return Promise.resolve(false);
+    return window.AdvCRM.post({
+      name: p.name,
+      phone: p.phone,
+      city: p.location,
+      product: SERVICE,
+      title: 'Consultation request',
+      lines: {
+        'Service': SERVICE,
+        'Page': SLUG,
+        'Location': p.location === 'Baruipur' ? 'Advitya Hospital, Baruipur' : 'Advitya Healthcares — Kolkata',
+        'Condition': p.condition,
+        'Preferred date': p.date,
+        'Preferred time': p.time,
+        'Message': p.message,
+        'Consent to contact': p.consent ? 'Yes' : 'No'
+      }
+    });
+  }
+
+  function whatsappLink(p) {
     var lines = [
-      'Colorectal surgery consultation request \u2014 Advitya Healthcares',
-      'Mobile: +91 ' + phone,
-      'Preferred location: ' + picked.location
+      'Colorectal surgery consultation request — Advitya Healthcares',
+      'Name: ' + p.name,
+      'Mobile: +91 ' + p.phone,
+      'Preferred location: ' + p.location
     ];
-    if (picked.date) lines.push('Preferred date: ' + picked.date);
-    if (picked.time) lines.push('Preferred time: ' + label12(picked.time));
-    window.open('https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(lines.join('\n')),
-      '_blank', 'noopener');
+    if (p.date) lines.push('Preferred date: ' + p.date);
+    if (p.time) lines.push('Preferred time: ' + p.time);
+    if (p.condition) lines.push('Condition: ' + p.condition);
+    if (p.message) lines.push('Message: ' + p.message);
+    return 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(lines.join('\n'));
+  }
+
+  function showDone(p, sent) {
+    var title = $('#appt-done-title');
+    var text = $('#appt-done-text');
+    if (sent) {
+      title.textContent = 'Thank you, ' + p.name + '.';
+      text.textContent = 'We have received your appointment request. Our team will call you on +91 ' +
+        p.phone + ' to confirm the venue and slot.';
+    } else {
+      title.textContent = 'Please send it on WhatsApp';
+      text.textContent = 'We could not reach our booking system just now. ';
+      var a = document.createElement('a');
+      a.href = whatsappLink(p);
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = 'Open WhatsApp with your request filled in';
+      text.appendChild(a);
+      text.appendChild(document.createTextNode(', or call +91 92112 21551.'));
+    }
+    showPanel(true);
+    var done = $('.modal__go', apptDone);
+    if (done) done.focus();
   }
 
   $$('[data-book]').forEach(function (el) {
@@ -535,7 +684,9 @@
       if (!modal.classList.contains('is-open')) return;
       if (e.key === 'Escape') { closeModal(); return; }
       if (e.key === 'Tab') {
-        var focusable = $$('button, input, a[href]', modal).filter(function (n) { return !n.disabled; });
+        var focusable = $$('button, input, select, textarea, a[href]', modal).filter(function (n) {
+          return !n.disabled && n.offsetParent !== null;
+        });
         if (!focusable.length) return;
         var first = focusable[0], last = focusable[focusable.length - 1];
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
@@ -544,24 +695,32 @@
     });
   }
 
-  if (quickForm) {
-    quickForm.addEventListener('submit', function (e) {
+  if (apptForm) {
+    apptForm.addEventListener('input', function (e) {
+      if (e.target && e.target.getAttribute('aria-invalid') === 'true') clearError(e.target);
+    });
+    apptForm.addEventListener('change', function (e) {
+      if (e.target && e.target.name === 'consent') clearError(e.target);
+    });
+
+    apptForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      var digits = normalisePhone(quickPhone.value);
-      if (!/^[6-9][0-9]{9}$/.test(digits)) {
-        quickError.textContent = 'Please enter a valid 10-digit Indian mobile number.';
-        quickError.classList.add('is-visible');
-        quickPhone.focus();
-        return;
-      }
-      quickError.textContent = 'Opening WhatsApp with your request \u2026';
-      quickError.classList.add('is-visible', 'is-ok');
-      sendRequest(digits);
-      setTimeout(function () {
-        quickError.classList.remove('is-ok');
-        quickForm.reset();
-        closeModal();
-      }, 1400);
+      setStatus('');
+      if (!validate()) return;
+
+      var p = readForm();
+      var btn = $('button[type="submit"]', apptForm);
+      btn.disabled = true;
+      btn.setAttribute('aria-busy', 'true');
+      btn.textContent = 'Sending your request…';
+
+      sendToCRM(p).then(function (ok) {
+        btn.disabled = false;
+        btn.removeAttribute('aria-busy');
+        btn.textContent = 'Request appointment';
+        if (ok) apptForm.reset();
+        showDone(p, ok);
+      });
     });
   }
 

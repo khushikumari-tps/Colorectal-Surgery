@@ -251,7 +251,7 @@ a.sr-only:focus,a.sr-only:focus-visible{
 .about-band .wrap{max-width:1700px}
 .about-band__grid{display:grid;grid-template-columns:minmax(0,1fr) 546px;gap:46px;align-items:start}
 .about h2{font-family:var(--font-head);font-size:clamp(1.6rem,2.4vw,2.1rem);font-weight:400;color:var(--ink);margin:0 0 24px;letter-spacing:-.01em}
-.about h2 em{font-style:italic;font-weight:800}
+.about h2 em{font-style:normal;font-weight:800}
 .about p{color:var(--body);font-size:1rem;line-height:1.72;max-width:74ch}
 .about a.inline{color:var(--blue-600);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
 .about__more{max-height:0;overflow:hidden;transition:max-height .4s ease}
@@ -570,8 +570,6 @@ a.sr-only:focus,a.sr-only:focus-visible{
   margin-top:clamp(34px,4vw,54px);padding-block:22px;border-top:1px solid rgba(255,255,255,.1);
   display:flex;flex-wrap:wrap;gap:12px 26px;align-items:center;justify-content:space-between;font-size:.85rem;
 }
-.footer__legal{display:flex;flex-wrap:wrap;gap:8px 22px}
-.footer__legal a:hover{color:#fff}
 
 /* ---------- 20. Sticky mobile CTA ---------- */
 .mobile-cta{
@@ -749,6 +747,41 @@ a.sr-only:focus,a.sr-only:focus-visible{
 }
 .modal__back:hover{text-decoration:underline;text-underline-offset:3px}
 body.modal-open{overflow:hidden}
+
+/* appointment form inside the modal */
+.modal{overflow-y:auto}
+.modal__card--form{max-width:560px;max-height:calc(100dvh - 44px);overflow-y:auto;padding:30px 30px 24px}
+.modal__card--form h2{padding-right:34px}
+.bkf__row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bkf__field{margin-bottom:12px;min-width:0}
+.bkf__field label{display:block;margin:0 0 6px;font-size:.84rem;font-weight:600;color:var(--ink)}
+.bkf__field > input,.bkf__field > select,.bkf__field > textarea{
+  width:100%;border:1px solid #E5D2D0;border-radius:8px;background:#fff;padding:12px 13px;
+  font:inherit;font-size:.97rem;color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s;
+}
+.bkf__field > textarea{resize:vertical;min-height:84px}
+.bkf__field > input:focus,.bkf__field > select:focus,.bkf__field > textarea:focus{
+  border-color:var(--blue-500);box-shadow:0 0 0 4px rgba(194,74,68,.14)
+}
+.bkf__field .modal__field input{padding:12px 13px;font-size:.97rem}
+.bkf [aria-invalid="true"],.bkf .modal__field:has([aria-invalid="true"]){border-color:#B24A4A}
+.bkf__err{margin:6px 0 0;font-size:.8rem;color:#B24A4A}
+.bkf__consent{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:flex-start;margin:4px 0 0;font-size:.84rem;color:var(--body);line-height:1.45;cursor:pointer}
+.bkf__consent span{flex:1;min-width:0}
+.bkf__consent .bkf__err{flex-basis:100%;margin:2px 0 0 28px}
+.bkf__consent input{flex:none;width:18px;height:18px;margin-top:2px;accent-color:var(--blue-600)}
+.bkf .modal__go{margin-top:18px}
+.bkf .modal__go[disabled]{opacity:.7;cursor:progress;transform:none}
+.appt-done{text-align:center;padding:10px 0 0}
+.appt-done__icon{display:inline-grid;place-items:center;width:58px;height:58px;border-radius:50%;background:var(--teal-100);color:var(--teal-600);margin-bottom:14px}
+.appt-done__icon svg{width:28px;height:28px}
+.appt-done p{color:var(--body);margin:0 0 10px}
+.appt-done__small{font-size:.88rem}
+.appt-done__small a{color:var(--blue-600);font-weight:600}
+@media (max-width:520px){
+  .bkf__row{grid-template-columns:1fr;gap:0}
+  .modal__card--form{padding:26px 20px 20px}
+}
 @media (max-width:420px){
   .modal__card{padding:30px 22px 24px}
   .modal__card h2{font-size:1.28rem}
@@ -761,7 +794,7 @@ body.modal-open{overflow:hidden}
   font-family:var(--font-head);font-weight:400;font-size:clamp(1.6rem,2.6vw,2.15rem);
   color:#6B5758;margin:0;letter-spacing:-.01em;
 }
-.tl-head h2 em{font-style:italic;font-weight:800;color:var(--ink)}
+.tl-head h2 em{font-style:normal;font-weight:800;color:var(--ink)}
 .tl-nav{display:flex;gap:10px;flex:none}
 .tl-nav button{
   width:44px;height:44px;border-radius:50%;border:1px solid #E0CDCB;background:#fff;cursor:pointer;
@@ -1092,7 +1125,7 @@ body.modal-open{overflow:hidden}
   .type-card__link{min-height:44px;padding:10px 0 2px}
   .venue__links a{min-height:40px;padding:6px 0}
   .loc-card__go{width:40px;height:40px}
-  .footer__links a,.footer__contact a,.footer__legal a{display:inline-block;min-height:36px;padding:6px 0}
+  .footer__links a,.footer__contact a{display:inline-block;min-height:36px;padding:6px 0}
   .faq__q{min-height:56px}
   .radio{padding:4px 0}
 
@@ -1220,40 +1253,19 @@ body.modal-open{overflow:hidden}
 
 
 /* ==========================================================================
-   41. Site header — logo only
-   One header for every breakpoint. The lockup scales with clamp(), so the
-   mark keeps its natural 138:117 ratio and the wordmark never truncates.
+   41. Site header — stacked logo only
    ========================================================================== */
 .mnav{
   position:fixed;z-index:960;
-  top:clamp(14px,1.8vw,24px);
+  top:clamp(10px,1.4vw,18px);
   left:clamp(14px,2.4vw,30px);
   display:inline-flex;align-items:center;
-  max-width:calc(100% - clamp(28px,4.8vw,60px));
-  padding:clamp(8px,.9vw,11px) clamp(14px,1.5vw,20px) clamp(8px,.9vw,11px) clamp(10px,1.1vw,14px);
-  background:rgba(255,255,255,.96);
-  border:1px solid rgba(170,40,50,.1);
-  border-radius:clamp(13px,1.4vw,17px);
-  box-shadow:0 10px 26px rgba(58,10,12,.16),0 2px 6px rgba(58,10,12,.05);
-  -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
 }
-.mnav__logo{display:inline-flex;align-items:center;gap:clamp(9px,1.2vw,12px);min-width:0}
-.mnav__logo img{width:clamp(44px,5.2vw,60px);height:auto;flex:none}
-.mnav__logotext{display:flex;flex-direction:column;line-height:1.15;min-width:0}
-.mnav__logotext b{
-  font-family:var(--font-head);font-weight:800;
-  font-size:clamp(.9rem,1.5vw,1.18rem);color:var(--navy-800);
-  letter-spacing:-.02em;white-space:nowrap;
-}
-.mnav__logotext small{
-  font-size:clamp(.58rem,.85vw,.72rem);font-weight:700;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--teal-600);white-space:nowrap;
-}
-.mnav__logo:hover .mnav__logotext b{color:var(--blue-600)}
+.mnav__logo{display:block;line-height:0}
+.mnav__logo img{width:clamp(84px,8.5vw,124px);height:auto}
 
-/* the hero used to leave room for a floating brand mark; the header holds
-   that space now, so the band starts straight after it */
-.phero{padding-top:clamp(96px,8.4vw,124px)}
+/* top padding keeps the hero clear of the fixed language/tools bar */
+.phero{padding-top:clamp(108px,10.5vw,146px)}
 
 /* ==========================================================================
    42. Section menu — floating panel, mobile/tablet only
@@ -1569,3 +1581,6 @@ body{top:0 !important;position:static !important}
   }
   .phero__photo:hover img,.anatomy:hover{transform:none !important}
 }
+
+/* no italic text anywhere on the page */
+em,i,cite,address,dfn,var{font-style:normal}

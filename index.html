@@ -152,8 +152,7 @@
 
 <header class="mnav" id="mnav">
   <a class="mnav__logo" href="#top" aria-label="Advitya Healthcares - Colorectal Surgery">
-    <img src="images/advitya_logo_mark.png" alt="Advitya Healthcares logo" width="138" height="117">
-    <span class="mnav__logotext" translate="no"><b>Advitya Healthcares</b><small>Science for Humanity</small></span>
+    <img src="images/advitya_logo_nav.png" alt="Advitya Healthcares logo" width="234" height="200">
   </a>
 </header>
 
@@ -1116,11 +1115,6 @@
 
     <div class="footer__bottom">
       <span>&copy; <span id="year">2026</span> Advitya Healthcares. All rights reserved.</span>
-      <nav class="footer__legal" aria-label="Legal">
-        <a href="https://www.advityahealthcares.com/">Privacy Policy</a>
-        <a href="https://www.advityahealthcares.com/">Terms &amp; Conditions</a>
-        <a href="https://www.advityahealthcares.com/">Medical Disclaimer</a>
-      </nav>
     </div>
   </div>
 </footer>
@@ -1132,25 +1126,83 @@
   <a class="is-book" href="#book" data-book><svg><use href="#i-calendar"/></svg>Book Appointment</a>
 </nav>
 
-<!-- ============ QUICK-START MODAL ============ -->
+<!-- ============ APPOINTMENT MODAL ============
+     Same fields and the same lead route as the Advitya landing pages: the
+     request is posted to the CRM through js/crm-lead.js (keyed in
+     js/crm-config.js). -->
 <div class="modal" id="quick-modal" role="dialog" aria-modal="true" aria-labelledby="quick-title" hidden>
-  <div class="modal__card" role="document">
+  <div class="modal__card modal__card--form" role="document">
     <button class="modal__close" type="button" data-modal-close aria-label="Close"><svg><use href="#i-close"/></svg></button>
 
-    <h2 id="quick-title">Hello, Guest!</h2>
-    <p class="modal__sub">Quick booking using <b>Mobile Number</b>.</p>
+    <div id="appt-panel">
+      <h2 id="quick-title">Book your surgical consultation</h2>
+      <p class="modal__sub">A few details and our team will call you back to confirm.</p>
 
-    <form id="quick-form" novalidate>
-      <label class="sr-only" for="quick-phone">Mobile number</label>
-      <div class="modal__field">
-        <span class="modal__prefix">+91</span>
-        <input id="quick-phone" name="quick-phone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="">
-      </div>
-      <p class="modal__error" id="quick-error" role="alert"></p>
+      <form class="bkf" id="appt-form" novalidate>
+        <div class="bkf__row">
+          <div class="bkf__field">
+            <label for="appt-name">Name</label>
+            <input id="appt-name" name="name" type="text" autocomplete="name" required>
+          </div>
+          <div class="bkf__field">
+            <label for="appt-phone">Phone number</label>
+            <div class="modal__field">
+              <span class="modal__prefix">+91</span>
+              <input id="appt-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="14" required>
+            </div>
+          </div>
+        </div>
 
-      <button class="modal__go" type="submit">Get Started</button>
-      <button class="modal__back" type="button" data-modal-close>Go Back</button>
-    </form>
+        <div class="bkf__field">
+          <label for="appt-location">Location</label>
+          <select id="appt-location" name="location">
+            <option value="Kolkata">Advitya Healthcares &mdash; Kolkata</option>
+            <option value="Baruipur">Advitya Hospital, Baruipur</option>
+          </select>
+        </div>
+
+        <div class="bkf__row">
+          <div class="bkf__field">
+            <label for="appt-date">Preferred date</label>
+            <input id="appt-date" name="date" type="date">
+          </div>
+          <div class="bkf__field">
+            <label for="appt-time">Preferred time</label>
+            <select id="appt-time" name="time">
+              <option value="">No preference</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bkf__field">
+          <label for="appt-condition">Surgery / condition</label>
+          <input id="appt-condition" name="condition" type="text" value="Colorectal Surgery">
+        </div>
+
+        <div class="bkf__field">
+          <label for="appt-message">Message</label>
+          <textarea id="appt-message" name="message" rows="3" placeholder="Anything you would like the team to know before the call."></textarea>
+        </div>
+
+        <label class="bkf__consent">
+          <input type="checkbox" name="consent" required>
+          <span>I agree to be contacted about this enquiry. Please do not include detailed medical information in this form.</span>
+        </label>
+
+        <p class="modal__error" id="appt-error" role="alert"></p>
+
+        <button class="modal__go" type="submit">Request appointment</button>
+        <button class="modal__back" type="button" data-modal-close>Go Back</button>
+      </form>
+    </div>
+
+    <div class="appt-done" id="appt-done" role="status" hidden>
+      <span class="appt-done__icon"><svg><use href="#i-check"/></svg></span>
+      <h2 id="appt-done-title">Thank you</h2>
+      <p id="appt-done-text">We have received your appointment request. Our team will call you back to confirm the venue and slot.</p>
+      <p class="appt-done__small">For an emergency, call <a href="tel:+919211221553">+91 92112 21553</a> now.</p>
+      <button class="modal__go" type="button" data-modal-close>Done</button>
+    </div>
   </div>
 </div>
 
@@ -1165,6 +1217,8 @@ function googleTranslateElementInit(){
 }
 </script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
+<script src="js/crm-config.js" defer></script>
+<script src="js/crm-lead.js" defer></script>
 <script src="js/main.js" defer></script>
 </body>
 </html>
