@@ -1584,3 +1584,41 @@ body{top:0 !important;position:static !important}
 
 /* no italic text anywhere on the page */
 em,i,cite,address,dfn,var{font-style:normal}
+
+
+/* ==========================================================================
+   Specialist surgical consultations -- cross-links to the other dedicated
+   surgical pages on the main site. Tiles rather than banners so the block
+   stays one screenful above the footer.
+   ========================================================================== */
+.xlinks__grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.6vw,20px);
+}
+.xlinks__tile{
+  display:flex;flex-direction:column;gap:8px;
+  padding:clamp(18px,2vw,24px);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow-xs);text-decoration:none;
+  transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;
+}
+.xlinks__tile:hover,.xlinks__tile:focus-visible{
+  transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--blue-100);
+}
+.xlinks__ico{
+  display:grid;place-items:center;width:40px;height:40px;margin-bottom:4px;
+  border-radius:12px;background:var(--blue-050);color:var(--blue-600);
+}
+.xlinks__ico svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
+.xlinks__tile b{font-family:var(--font-head);font-size:1.03rem;color:var(--ink)}
+.xlinks__txt{font-size:.94rem;color:var(--body);line-height:1.55}
+.xlinks__cta{
+  display:inline-flex;align-items:center;gap:7px;margin-top:auto;padding-top:10px;
+  font-family:var(--font-head);font-size:.9rem;font-weight:700;color:var(--blue-600);
+}
+.xlinks__cta svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;transition:transform .25s ease}
+.xlinks__tile:hover .xlinks__cta svg{transform:translateX(3px)}
+
+@media (max-width:900px){ .xlinks__grid{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:560px){ .xlinks__grid{grid-template-columns:1fr} }
